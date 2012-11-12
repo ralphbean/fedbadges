@@ -14,33 +14,29 @@ class FedoraBadgesConsumer(FedmsgConsumer):
     """
     The Base class for creating fedmsg consumers that issue open badges
     Provides a base that does all of the heavy lifting related to issuing badges.
-    All the subclass needs to do is have a topic, a name, and implement consume(self, msg)
+    All the subclass needs to do is have a topic and implement consume(self, msg)
 
     :type hub: Moksha Hub
     :param hub: the moksha hub we are getting our messages from
-
-    :type name: str
-    :param name: name of this consumer, used to get details from the config file
     """
 
-    def __init__(self, hub, name):
-        self.name = name
+    def __init__(self, hub):
+        super(FedoraBadgesConsumer, self).__init__(hub)
+
+        # If fedmsg doesn't think we should be enabled, then we should quit
+        # before setting up all the extra special zmq machinery.
+        # _initialized is set in moksha.api.hub.consumer
+        if not getattr(self, "_initialized", False):
+            return
+
         self.badges = {}
-        self.hub = hub
-        self.DBSession = None
-        ENABLED = 'fedmsg.consumers.badges.{0}.enabled'.format(self.name)
-        if not asbool(hub.config.get(ENABLED, False)):
-            log.info('fedmsg.consumers.badges.{0} disabled'.format(self.name))
-            return
 
-        global_settings = hub.config.get("badges_global")
+        global_settings = hub.config["badges_global"]
+        database_uri = global_settings['database_uri']
 
-        database_uri = global_settings.get('database_uri', '')
-        if database_uri == '':
-            raise Exception('Badges consumer requires a database uri')
-            return
         self.tahrir = TahrirDatabase(database_uri)
         self.DBSession = self.tahrir.session_maker
+
         issuer = global_settings.get('badge_issuer')
         self.issuer_id = self.tahrir.add_issuer(
                 issuer.get('issuer_origin'),
@@ -58,7 +54,6 @@ class FedoraBadgesConsumer(FedmsgConsumer):
                     badge.get('badge_criteria'),
                     self.issuer_id
                     )
-        return super(FedoraBadgesConsumer, self).__init__(hub)
 
 
     def award_badge(self, email, badge_id, issued_on=None):

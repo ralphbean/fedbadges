@@ -1,6 +1,7 @@
-config = dict(
+config = {
+    'fedmsg.consumers.badges.examplebadge.enabled': True,
     #An example badge definition
-    examplebadge_badges = [
+    'examplebadge_badges': [
         dict(
             badge_name='Example_Badge',
             badge_image='http://3.bp.blogspot.com/-XhjKweGVJHI/TZBrIJugrBI/AAAAAAAAAJM/ozRJi2bLAK4/s1600/fedora-logo.png',
@@ -8,4 +9,4 @@ config = dict(
             badge_criteria='http://fedoraproject.org'
         ),
     ]
-)
+}

@@ -11,10 +11,11 @@ class ExampleBadgesConsumer(FedoraBadgesConsumer):
     :param hub: The Moksha hub we are receiving messages from
     """
     topic = "org.fedoraproject.*"
+    name = "examplebadge"
+    config_key = "fedmsg.consumers.badges.{name}.enabled".format(name=name)
 
     def __init__(self, hub):
-        self.name = "examplebadge"
-        super(ExampleBadgesConsumer, self).__init__(hub, self.name)
+        super(ExampleBadgesConsumer, self).__init__(hub)
 
     def consume(self, msg):
         """
@@ -30,13 +31,8 @@ class ExampleBadgesConsumer(FedoraBadgesConsumer):
         if type(body) == type(""):
             return
         body = body.get('msg')
-        print body.get('action')
         if body.get('action') == 'This guy did some awesome thing!':
             email = body.get('email')
             log.info("Awarding 'Example Badge' to {0}".format(email))
             badge_id = "example_badge"
             self.award_badge(email, badge_id)
-
-
-
-
